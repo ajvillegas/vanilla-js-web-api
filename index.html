@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="description" content="This is a quick example of how to use vanilla JavaScript to display information from a web API.">
+
+        <title>Web API with Vanilla JS</title>
+    </head>
+
+    <body>
+        <div id="app"></div>
+
+        <script>
+            // Select the <div> to display the data.
+            const app = document.querySelector('#app');
+
+            // Sanitize and encode all HTML in a string to prevent XSS attacks.
+            const sanitizeHTML = function (string) {
+                const temp = document.createElement('div');
+                temp.textContent = string;
+                return temp.innerHTML;
+            };
+
+            fetch('https://www.googleapis.com/books/v1/volumes?q=isbn:0618640150').then(function (response) {
+                // The API call was successful.
+                if (response.ok) {
+                    // Return the JSON string promise.
+                    return response.json();
+                }
+
+                // Otherwise, reject.
+                return Promise.reject(response);
+            }).then(function (data) {
+                // The JSON data from our response.
+                const results = data.items[0];
+
+                app.innerHTML = `
+                    <h1>${sanitizeHTML(results.volumeInfo.title)}</h1>
+                    <p>Written by <strong>${sanitizeHTML(results.volumeInfo.authors[0])}</strong></p>
+                    <p>Published by <strong>${sanitizeHTML(results.volumeInfo.publisher)}</strong></p>
+                    <h2>Raw data from the API call (remove when you are done developing this page)</h2>
+                    <pre>${JSON.stringify(results, null, 2)}</pre>
+                `;
+            }).catch(function (error) {
+                // There was an error.
+                app.innerHTML = '<p>We\'re sorry, we\'re not able to retrieve this information at the moment, please try again later.</p>';
+            });
+        </script>
+    </body>
+
+</html>
